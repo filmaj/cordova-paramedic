@@ -51,7 +51,6 @@
     "wd": "^0.4.0"
   },
   "devDependencies": {
-    "jshint": "^2.6.0",
-    "appium": "1.5.3"
+    "jshint": "^2.6.0"
   }
 }
