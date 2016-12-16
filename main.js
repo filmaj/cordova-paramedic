@@ -60,7 +60,9 @@ var USAGE           = "Error missing args. \n" +
     "--ci : (optional) Skip tests that require user interaction\n" +
     "";
 
-var argv = parseArgs(process.argv.slice(2));
+var argv = parseArgs(process.argv.slice(2), {
+    "string": ["plugin"]
+});
 var pathToParamedicConfig = argv.config && path.resolve(argv.config);
 
 if (pathToParamedicConfig || // --config
