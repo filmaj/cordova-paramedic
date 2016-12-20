@@ -36,22 +36,31 @@ layers?
  - The target environment to run the tests on: local (simulator vs. real device)
    vs. remote
 
-# Issues Identified
+Feedback welcome @purplecabbage / @alsorokin !
 
-- CLI flags renamed to take into account the difference, or sameness, of running local vs. remote appium.
+# Issues Identified / Features Wanted
+
+- CLI flags renamed to take into account the difference, or sameness, of running local vs. remote (Sauce Labs') appium.
     i.e. `--saucePlatformVersion` could be changed to `--appiumPlatformVersion` or just `--platformVersion`. The
     platformVersion capability applies to _appium_, and not _just_ to Sauce Labs.
-- the local-on-appium simulator vs. real device scenario is messed up on iOS. appium needs to be set up in a special way (need a release build, ios proxy needs to run, udid of device needs to be provided).
-    additionally, ios 10 requires to have signing by default. so need to pass in buildConfig flag (to specify cert / provisioning profile / dev team id details).
-    paramedic should not uninstall app via xcrun simctl in local ios real device situation.
-- for remote sauce labs runs, providing a `build` appium capability that aggregates all test runs from a single 'build'. Naming the build according to the pull request / periodic build names would be helpful for sorting through remote sauce runs.
-- for remote sauce labs runs, providing a more descriptive `name` capability better reflecting the test behaviour.
-- for CI + remote sauce labs runs, better logging out of links to sauce labs test runs
-- do we run all appium tests in a single appium session? should we? it looks like errors destroy a session, which could lead to different sessions / different behaviours depending on failure modes / frequencies.
-- a nicer usage help text :D
+- the local-on-appium simulator vs. real device scenario is messed up on iOS. appium needs to be set up in a special way:
+  - need a signed build, so the `cordova build` command needs to be provided with a `buildConfig` flag to specify required cert/provsioning profile, and, in the latest versions of ios, team ID details.
+  - ios webkit debug proxy needs to run
+  - udid of device needs to be provided
+  - paramedic should not uninstall app via xcrun simctl in local ios real device situation, could use libimobiledevice for this instead.
+- for remote sauce labs runs, providing a set of sauce-specific capabilities could be helpful to annotate the tests and make it easier to browse through the sauce labs test archives:
+  - a `build` appium/selenium capability would aggregate multiple test runs into a single 'build'. Naming the build according to the pull request / periodic build names would be helpful and help in organization..
+  - providing a more descriptive `name` appium/selenium capability better reflecting the test behaviour, would make clearer what each individual test session Sauce did.
+  - using the sauce labs REST API to update, after the test run completes, whether individual tests passed or failed would further improve the sauce labs browsing experience.
+- for CI + remote sauce labs runs, better logging out of links to sauce labs test runs, so we can quickly find the sauce link (currently have to infer it from webdriver session logging).
+- we (try to) run all appium tests in a single appium session. should we? it looks like errors cause a 'test restart' behaviour, which destroy the current session and recreates a new one. this could lead to different sessions / different behaviours depending on failure modes / frequencies. a best practice is to run a single test case per session, ensuring full test isolation.
+  - the negative in that situation is likely a higher run time on sauce labs. should measure the impact on CI run length to see if it is significant enough to deter us from this path.
+  - the positive in that situation is that we can leverage parallelism to run tests in parallel, thus in theory speeding up our test runs.
+    - we should see what our maximum concurrency in the sauce labs account is, and use it if it is more than one. This would significantly decrease test run times.
+  - the local case should not be affected by test isolation at all.
+- a nicer usage help text :D 
 - clean up the logging
 - take-screenshot-on-failure: these would have different behaviours in the remote-on-sauce vs. local-on-appium cases.
-    remotely on sauce, issuing a WebDriver /screenshot command is all you need. perhaps linking to the screenshot in the job logs on failure?
-    locally on appium, you'd need to issue the screenshot command and also write it out to a local temporary location. again, log out the location of the screenshot.
-    is this a good use case for middleware approach?
+  - remotely on sauce, issuing a WebDriver /screenshot command is all you need. perhaps linking to the screenshot in the job logs on failure? 
+  - locally on appium, you'd need to issue the screenshot command and also write it out to a local temporary location. again, log out the location of the screenshot.
 - ability to specify a pre-built, paramedic-friendly app to use with either autotests or appium tests (to avoid having to recompile on every run, if, for example, one is just tweaking tests).
