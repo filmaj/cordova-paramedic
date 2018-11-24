@@ -7,8 +7,8 @@
   "bin": {
     "cordova-paramedic": "./main.js"
   },
-  "engines" : {
-      "node" : ">=0.11.2"
+  "engines": {
+    "node": ">=4.3.0"
   },
   "repository": {
     "type": "git",
@@ -22,7 +22,7 @@
     "test-android": "node main.js --platform android --plugin ./spec/testable-plugin/",
     "test-ios": "node main.js --platform ios --plugin ./spec/testable-plugin/ --verbose",
     "test-windows": "node main.js --platform windows --plugin ./spec/testable-plugin/",
-    "test-wp8": "node main.js --platform wp8 --plugin ./spec/testable-plugin/"
+    "test-browser": "node main.js --platform browser --plugin ./spec/testable-plugin/"
   },
   "keywords": [
     "cordova",
@@ -33,7 +33,7 @@
   "dependencies": {
     "cordova-common": "^1.1.0",
     "expect-telnet": "^0.5.2",
-    "jasmine": "^2.4.1",
+    "jasmine": "2.4.1",
     "jasmine-reporters": "^2.1.1",
     "jasmine-spec-reporter": "^2.4.0",
     "localtunnel": "~1.5.0",
@@ -41,6 +41,7 @@
     "path-extra": "^3.0.0",
     "q": "^1.4.1",
     "randomstring": "^1.1.5",
+    "sauce-connect-launcher": "^1.2.2",
     "saucelabs": "^1.2.0",
     "shelljs": "~0.3.0",
     "socket.io": "^1.4.5",
@@ -48,10 +49,9 @@
     "tmp": "0.0.25",
     "tree-kill": "^1.1.0",
     "unorm": "^1.4.1",
-    "wd": "^0.4.0"
+    "wd": "^1.2.0"
   },
   "devDependencies": {
-    "jasmine-node": "~1",
     "jshint": "^2.6.0"
   }
 }

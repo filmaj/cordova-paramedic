@@ -1,0 +1,8 @@
+{
+    "platform": "ios@https://github.com/apache/cordova-ios.git",
+    "action": "run",
+    "cleanUpAfterRun": true,
+    "verbose": true,
+    "saucePlatformVersion": "10.0",
+    "sauceAppiumVersion": "1.6.4"
+}

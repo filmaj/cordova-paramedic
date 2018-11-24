@@ -23,10 +23,11 @@ var parseArgs       = require('minimist');
 var path            = require('path');
 var paramedic       = require('./lib/paramedic');
 var ParamedicConfig = require('./lib/ParamedicConfig');
+var util            = require('./lib/utils').utilities;
 
 var USAGE           = "Error missing args. \n" +
-    "cordova-paramedic --platform PLATFORM --plugin PATH [--justbuild --timeout MSECS --startport PORTNUM --endport PORTNUM --browserify]\n" +
-    "`PLATFORM` : the platform id. Currently supports 'ios', 'browser', 'windows', 'android', 'wp8'.\n" +
+    "cordova-paramedic --platform PLATFORM --plugin PATH [--justbuild --timeout MSECS --startport PORTNUM --endport PORTNUM --browserify --version]\n" +
+    "`PLATFORM` : the platform id. Currently supports 'ios', 'browser', 'windows', 'android'.\n" +
                     "\tPath to platform can be specified as link to git repo like:\n" +
                     "\twindows@https://github.com/apache/cordova-windows.git\n" +
                     "\tor path to local copied git repo like:\n" +
@@ -38,34 +39,41 @@ var USAGE           = "Error missing args. \n" +
     "`MSECS` : (optional) time in millisecs to wait for tests to pass|fail \n" +
               "\t(defaults to 10 minutes) \n" +
     "`PORTNUM` : (optional) ports to find available and use for posting results from emulator back to paramedic server(default is from 8008 to 8009)\n" +
-    "--target : (optional) target to deploy to\n" +
-    "--justbuild : (optional) just builds the project, without running the tests \n" +
     "--browserify : (optional) plugins are browserified into cordova.js \n" +
-    "--verbose : (optional) verbose mode. Display more information output\n" +
-    "--useTunnel: (optional) use tunneling instead of local address. default is false\n" +
-    "--config : (optional) read configuration from paramedic configuration file\n" +
-    "--outputDir : (optional) path to save Junit results file & Device logs\n" +
-    "--cleanUpAfterRun : (optional) cleans up the application after the run\n" +
-    "--logMins : (optional) Windows only - specifies number of minutes to get logs\n" +
-    "--tccDb : (optional) iOS only - specifies the path for the TCC.db file to be copied.\n" +
-    "--shouldUseSauce : (optional) run tests on Saucelabs\n" +
     "--buildName : (optional) Build name to show in Saucelabs dashboard\n" +
-    "--sauceUser : (optional) Saucelabs username\n" +
-    "--sauceKey : (optional) Saucelabs access key\n" +
-    "--sauceDeviceName : (optional) Name of the SauceLabs emulator. For example, \"iPhone Simulator\"\n" +
-    "--saucePlatformVersion : (optional) Platform version of the SauceLabs emulator. For example, \"9.3\"\n" +
-    "--sauceAppiumVersion : (optional) Appium version to use when running on Saucelabs. For example, \"1.5.3\"\n" +
-    "--skipMainTests : (optional) Do not run main (cordova-test-framework) tests\n" +
-    "--skipAppiumTests : (optional) Do not run Appium tests\n" +
     "--ci : (optional) Skip tests that require user interaction\n" +
+    "--cleanUpAfterRun : (optional) cleans up the application after the run\n" +
+    "--cli : (optional) A path to Cordova CLI\n" +
+    "--config : (optional) read configuration from paramedic configuration file\n" +
+    "--fileTransferServer : (optional) (cordova-plugin-file-transfer only) A server address tests should connect to\n" +
+    "--justbuild : (optional) just builds the project, without running the tests \n" +
+    "--logMins : (optional) Windows only - specifies number of minutes to get logs\n" +
+    "--outputDir : (optional) path to save Junit results file & Device logs\n" +
+    "--sauceAppiumVersion : (optional) Appium version to use when running on Saucelabs. For example, \"1.5.3\"\n" +
+    "--sauceDeviceName : (optional) Name of the SauceLabs emulator/browser. For example, \"iPhone Simulator\" or \"firefox\"\n" +
+    "--sauceKey : (optional) Saucelabs access key\n" +
+    "--saucePlatformVersion : (optional) Version of the emulator OS or version of the browser. For example, \"9.3\" or \"54.0\"\n" +
+    "--sauceTunnelId : (optional) Tunnel identifier to use. Only usable if you have Sauce Connect up\n"
+    "--sauceUser : (optional) Saucelabs username\n" +
+    "--shouldUseSauce : (optional) run tests on Sauce Labs\n" +
+    "--skipAppiumTests : (optional) Do not run Appium tests\n" +
+    "--skipMainTests : (optional) Do not run main (cordova-test-framework) tests\n" +
+    "--target : (optional) target to deploy to\n" +
+    "--tccDb : (optional) iOS only - specifies the path for the TCC.db file to be copied.\n" +
+    "--useTunnel: (optional) use tunneling instead of local address. default is false\n" +
+    "--verbose : (optional) verbose mode. Display more information output\n" +
+    "--version : (optional) prints cordova-paramedic version and exits\n" +
     "";
 
 var argv = parseArgs(process.argv.slice(2), {
     "string": ["plugin"]
 });
-var pathToParamedicConfig = argv.config && path.resolve(argv.config);
+var pathToParamedicConfig = util.getConfigPath(argv.config);
 
-if (pathToParamedicConfig || // --config
+if (argv.version) {
+    console.log(require('./package.json')['version']);
+    process.exit(0);
+} else if (pathToParamedicConfig || // --config
     argv.platform && argv.plugin) { // or --platform and --plugin
 
     var paramedicConfig = pathToParamedicConfig ?
@@ -131,6 +139,10 @@ if (pathToParamedicConfig || // --config
         paramedicConfig.setSauceAppiumVersion(argv.sauceAppiumVersion);
     }
 
+    if (argv.sauceTunnelId) {
+        paramedicConfig.setSauceTunnelId(argv.sauceTunnelId);
+    }
+
     if (argv.useTunnel) {
         if (argv.useTunnel === 'false') {
             argv.useTunnel = false;
@@ -152,6 +164,22 @@ if (pathToParamedicConfig || // --config
 
     if (argv.target) {
         paramedicConfig.setTarget(argv.target);
+    }
+
+    if (argv.fileTransferServer) {
+        paramedicConfig.setFileTransferServer(argv.fileTransferServer);
+    }
+
+    if (argv.browserify) {
+        paramedicConfig.setBrowserify(true);
+    }
+
+    if (argv.cli) {
+        paramedicConfig.setCli(argv.cli);
+    }
+
+    if (argv.args) {
+        paramedicConfig.setArgs(argv.args);
     }
 
     paramedic.run(paramedicConfig)
